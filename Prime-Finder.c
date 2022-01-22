@@ -14,23 +14,27 @@ typedef struct retStruct
 //functions
 DWORD* PrimeThread(void* numLimit);
 int* arraySort(void** arg, int numThreads);
-void merge(int *Arr, int start, int mid, int end);
-void mergeSort(int *Arr, int start, int end);
+void merge(int *arr, int start, int mid, int end);
+void mergeSort(int *arr, int start, int end);
 
 int main()
 {
-    //user values
+    //user values (Can be changed)
     int numThreads = 8;
-    int numLimit = 100;
+    int numLimit = 100000000;
 
     //initialize
+    if(numLimit<100)
+    {
+        printf("The mimimum number limit for this program is 100.\nContinuing with 100...\n");
+        numLimit = 100;
+    }
     double sum = 17;
     double total = 0;
     int i;
     int* arr;
     void** arg;
     clock_t time;
-    double totalTime;
     HANDLE* thread = (HANDLE*)malloc(sizeof(HANDLE)*numThreads);
     retStruct* retHead = (retStruct*)malloc(sizeof(retStruct));
     retStruct* retTail = retHead;
@@ -61,6 +65,7 @@ int main()
     }
 
     //Start threads and clock
+    printf("Threads are beginning, please wait...\n");
     time = clock();
     for(i=0; i<numThreads; i++)
     {
@@ -73,7 +78,6 @@ int main()
         WaitForSingleObject(thread[i], INFINITE);
     }
     time = clock() - time;
-    totalTime = ((double)(time))/CLOCKS_PER_SEC;
 
     //Combine each threads data into one
     retTail = retHead;
@@ -87,16 +91,17 @@ int main()
     }
     arr = arraySort(arg, numThreads);
 
-    //print values
-    printf("time %.2f\n", totalTime);
-    printf("total %.lf\nTop values", total);
-    printf("sum %.lf\n", sum);
+    //write values to file
+    FILE* ifp = fopen("primes.txt", "w");
+    fprintf(ifp, "Execution time: %.3lf seconds\n", ((double)time)/CLOCKS_PER_SEC);
+    fprintf(ifp, "Total number of primes found: %.lf\n", total);
+    fprintf(ifp, "Sum of all primes: %.lf\n", sum);
+    fprintf(ifp, "Top ten maximum primes, listed in order from lowest to highest:\n");
     for(i=0; i<10; i++)
     {
-        printf(" %d", arr[i]);
+        fprintf(ifp, "%d ", arr[i]);
     }
-    printf("\n");
-
+    fclose(ifp);
 
     //free all allocated data and handles
     for(i=0; i<numThreads; i++)
@@ -112,9 +117,11 @@ int main()
     free(arr);
     free(arg);
 
+    printf("Task completed successfully: Data printed to file primes.txt");
     return 1;
 }
 
+//Thread to find prime numbers
 DWORD* PrimeThread(void* arg)
 {
     void** arr = (void**)arg;
@@ -169,52 +176,45 @@ int* arraySort(void** arg, int numThreads)
     return tempArr;
 }
 
-void mergeSort(int *Arr, int start, int end) {
+void mergeSort(int *arr, int start, int end) {
 
 	if(start < end) 
     {
 		int mid = (start + end) / 2;
-		mergeSort(Arr, start, mid);
-		mergeSort(Arr, mid+1, end);
-		merge(Arr, start, mid, end);
+		mergeSort(arr, start, mid);
+		mergeSort(arr, mid+1, end);
+		merge(arr, start, mid, end);
 	}
 }
 
-void merge(int *Arr, int start, int mid, int end) 
+void merge(int *arr, int start, int mid, int end) 
 {
 	int temp[end - start + 1];
 	int i = start, j = mid+1, k = 0;
-
 	while(i <= mid && j <= end) 
     {
-		if(Arr[i] <= Arr[j]) 
+		if(arr[i] <= arr[j]) 
         {
-			temp[k] = Arr[i];
+			temp[k] = arr[i];
 			k += 1; i += 1;
 		}
 		else {
-			temp[k] = Arr[j];
+			temp[k] = arr[j];
 			k += 1; j += 1;
 		}
 	}
-
-	
 	while(i <= mid)
     {
-		temp[k] = Arr[i];
+		temp[k] = arr[i];
 		k += 1; i += 1;
 	}
-
-	 
 	while(j <= end)
     {
-		temp[k] = Arr[j];
+		temp[k] = arr[j];
 		k += 1; j += 1;
 	}
-
-	
 	for(i = start; i <= end; i += 1)
     {
-		Arr[i] = temp[i - start];
+		arr[i] = temp[i - start];
 	}
 }
