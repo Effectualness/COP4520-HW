@@ -1,1 +1,1 @@
-This repository serves to hold all homework assignments for COP4520: Concepts of Parallel and Distributed Processing. For more imformation on each assignment, please refer to the README files in each directory.
+This repository serves to hold all homework assignments for COP4520: Concepts of Parallel and Distributed Processing. For more information on each assignment, please refer to the README files in each directory.
