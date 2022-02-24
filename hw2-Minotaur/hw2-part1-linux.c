@@ -1,17 +1,19 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <windows.h>
+#include <pthread.h>
+#include <semaphore.h>
+#include <fcntl.h>
 
-HANDLE* semArray;
+sem_t** semArray;
 int cupcake = 1, alert = 0, numGuests;
 
-DWORD Leader(void* param)
+void* Leader(void* param)
 {
-    int guestNum = (int)param, count = 0;
-    srand(GetCurrentThreadId());
-    while(TRUE)
+    int guestNum = (__intptr_t)param, count = 0;
+    srand(pthread_self());
+    while(1)
     {
-        WaitForSingleObject(semArray[guestNum], INFINITE);
+        sem_wait(semArray[guestNum]);
         if(cupcake)
         {
             printf("Guest %d found a cupcake and ate it\n", guestNum);
@@ -20,8 +22,8 @@ DWORD Leader(void* param)
             {
                 alert = 1;
                 printf("Guest %d will alert the minotaur that all guests have entered the labyrinth at least once\n", guestNum);
-                ReleaseSemaphore(semArray[0], 1, NULL);
-                return 1;
+                sem_post(semArray[0]);
+                return (void*)1;
             }
         }
         else
@@ -36,20 +38,20 @@ DWORD Leader(void* param)
                 printf("and chose not to request another\n");
             }
         }
-        ReleaseSemaphore(semArray[0], 1, NULL);
+        sem_post(semArray[0]);
     }
 }
 
-DWORD Guest(void* param)
+void* Guest(void* param)
 {
-    int guestNum = (int)param, firstEmpty = 1;
-    srand(GetCurrentThreadId());
-    while(TRUE)
+    int guestNum = (__intptr_t)param, firstEmpty = 1;
+    srand(pthread_self());
+    while(1)
     {
-        WaitForSingleObject(semArray[guestNum], INFINITE);
+        sem_wait(semArray[guestNum]);
         if(alert)
         {
-            return 1;
+            return (void*)1;
         }
         if(cupcake)
         {
@@ -77,28 +79,28 @@ DWORD Guest(void* param)
                 }
             }
         }
-        ReleaseSemaphore(semArray[0], 1, NULL);
+        sem_post(semArray[0]);
     }
 }
 
-DWORD Minotaur(void* param)
+void* Minotaur(void* param)
 {
     int num;
-    srand(GetCurrentThreadId());
-    while(TRUE)
+    srand(pthread_self());
+    while(1)
     {
         num = rand() % numGuests + 1;
         printf("Minotaur has chosen guest %d to enter the labyrinth\n", num);
-        ReleaseSemaphore(semArray[num], 1, NULL);
-        WaitForSingleObject(semArray[0], INFINITE);
+        sem_post(semArray[num]);
+        sem_wait(semArray[0]);
         if(alert)
         {
             printf("The minotaur is pleased!\n");
             for(num=0; num<numGuests; num++)
             {
-                ReleaseSemaphore(semArray[num+1], 1, NULL);
+                sem_post(semArray[num+1]);
             }
-            return 1;
+            return (void*)1;
         }
     }
 }
@@ -108,7 +110,7 @@ void GetUserInput()
     int i, total = 0;
     char input[1024];
     printf("How many guests will be particpating in the game? Enter an integer: ");
-    while(TRUE)
+    while(1)
     {
         i = 0;
         scanf("%s", input);
@@ -164,30 +166,31 @@ void GetUserInput()
 int main()
 {
     GetUserInput();
-    srand(GetCurrentThreadId());
+    srand(pthread_self());
     int i, leaderNum = rand()%numGuests+1;
-    semArray = (HANDLE*)malloc(sizeof(HANDLE) * (numGuests+1));
-    HANDLE* threadArray = (HANDLE*)malloc(sizeof(HANDLE) * (numGuests+1));
+    semArray = (sem_t**)malloc(sizeof(sem_t*) * (numGuests+1));
+    pthread_t* threadArray = (pthread_t*)malloc(sizeof(pthread_t) * (numGuests+1));
     printf("\n%d guests are attending the party\nGuest %d was appointed the leader during the guests's planning period\n\n", numGuests, leaderNum);
     for(i=1; i<numGuests+1; i++)
     {
-        semArray[i] = CreateSemaphoreA(NULL, 0, 1, NULL);
+        semArray[i] = sem_open("/temp", O_CREAT | O_EXCL, 0644, 0);
+        sem_unlink("/temp");
         if(i != leaderNum)
         {
-            threadArray[i] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)Guest, (int)i, NULL, NULL);
+            pthread_create(&threadArray[i], NULL, Guest, (void*)(__intptr_t)i);
         }
         else
         {
-            threadArray[i] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)Leader, (int)i, NULL, NULL);
+            pthread_create(&threadArray[i], NULL, Leader, (void*)(__intptr_t)i);
         }
     }
-    semArray[0] = CreateSemaphoreA(NULL, 0, 1, NULL);
-    threadArray[0] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)Minotaur, NULL, NULL, NULL);
+    semArray[0] = sem_open("/temp", O_CREAT | O_EXCL, 0644, 0);
+    sem_unlink("/temp");
+    pthread_create(&threadArray[0], NULL, Minotaur, NULL);
     for(i=0; i<numGuests+1; i++)
     {
-        WaitForSingleObject(threadArray[i], INFINITE);
-        CloseHandle(threadArray[i]);
-        CloseHandle(semArray[i]);
+        pthread_join(threadArray[i], NULL);
+        sem_close(semArray[i]);
     }
     free(threadArray);
     free(semArray);

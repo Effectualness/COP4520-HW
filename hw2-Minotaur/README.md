@@ -10,6 +10,10 @@ gcc hw2-part1.c -o hw2-part1.exe
 OR
 gcc hw2-part2.c -o hw2-part2.exe
 
+gcc -pthread hw2-part1-linux.c -o hw2-part1-linux.exe
+
+gcc -pthread hw2-part2-linux.c -o hw2-part2-linux.exe
+
 To Execute (from hw1-Prime-Finder directory)
 hw2-part1.exe
 OR
