@@ -174,15 +174,15 @@ int main()
         semArray[i] = CreateSemaphoreA(NULL, 0, 1, NULL);
         if(i != leaderNum)
         {
-            threadArray[i] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)Guest, (int)i, NULL, NULL);
+            threadArray[i] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)Guest, (int*)i, 0, NULL);
         }
         else
         {
-            threadArray[i] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)Leader, (int)i, NULL, NULL);
+            threadArray[i] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)Leader, (int*)i, 0, NULL);
         }
     }
     semArray[0] = CreateSemaphoreA(NULL, 0, 1, NULL);
-    threadArray[0] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)Minotaur, NULL, NULL, NULL);
+    threadArray[0] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)Minotaur, NULL, 0, NULL);
     for(i=0; i<numGuests+1; i++)
     {
         WaitForSingleObject(threadArray[i], INFINITE);

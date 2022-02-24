@@ -7,7 +7,7 @@ int numGuests;
 
 DWORD Guest(void* param)
 {
-    int guestNum = (int)param, wait;
+    int guestNum = (int)param+1, wait;
     srand(GetCurrentThreadId());
     while(TRUE)
     {
@@ -98,7 +98,7 @@ int main()
     HANDLE* threadArray = (HANDLE*)malloc(sizeof(HANDLE) * numGuests);
     for(i=0; i<numGuests; i++)
     {
-        threadArray[i] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)Guest, (int)i, NULL, NULL);
+        threadArray[i] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)Guest, (int*)i, 0, NULL);
     }
     for(i=0; i<numGuests; i++)
     {
