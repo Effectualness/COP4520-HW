@@ -3,7 +3,7 @@
 #include <windows.h>
 
 //These values may be changed
-int prints = 0;
+int print = 0;
 int numPresents = 500000;
 int numServants = 4;
 
@@ -31,7 +31,7 @@ void AddPresent(int num, int id)
     if(pred == NULL)
     {
         sortedList = node;
-        if(prints)
+        if(print)
         {
             printf("Servant %d added new head %d\n", id, num);
         }
@@ -43,7 +43,7 @@ void AddPresent(int num, int id)
     {
         sortedList = node;
         sortedList->next = pred;
-        if(prints)
+        if(print)
         {
             printf("Servant %d replaced head %d with new head %d\n", id, pred->num, num);
         }
@@ -58,7 +58,7 @@ void AddPresent(int num, int id)
         if(curr == NULL)
         {
             pred->next = node;
-            if(prints)
+            if(print)
             {
                 printf("Servant %d replaced tail %d with new tail %d\n", id, pred->num, num);
             }
@@ -69,7 +69,7 @@ void AddPresent(int num, int id)
         {
             node->next = curr;
             pred->next = node;
-            if(prints)
+            if(print)
             {
                 printf("Servant %d inserted between nodes %d and %d with new node %d\n", id, pred->num, curr->num, num);
             }
@@ -89,7 +89,7 @@ int RemovePresent(int id)
     pred = sortedList;
     if(pred == NULL)
     {
-        if(prints)
+        if(print)
         {
             printf("Servant %d attempted to remove a present, but the list was empty.\n", id);
         }
@@ -98,7 +98,7 @@ int RemovePresent(int id)
     }
     WaitForSingleObject(pred->mutex, INFINITE);
     sortedList = pred->next;
-    if(prints)
+    if(print)
     {
         printf("Servant %d released old head %d\n", id, pred->num);
     }
@@ -115,7 +115,7 @@ int ContainsPresent(int num, int id)
     pred = sortedList;
     if(pred == NULL)
     {
-        if(prints)
+        if(print)
         {
             printf("Servant %d attempted to search for node %d, but the list was empty.\n", id, num);
         }
@@ -125,7 +125,7 @@ int ContainsPresent(int num, int id)
     WaitForSingleObject(pred->mutex, INFINITE);
     if(num == pred->num)
     {
-        if(prints)
+        if(print)
         {
             printf("Servant %d searched for and found at the head %d the requested node %d\n", id, pred->num, num);
         }
@@ -139,7 +139,7 @@ int ContainsPresent(int num, int id)
         curr = pred->next;
         if(curr == NULL)
         {
-            if(prints)
+            if(print)
             {
                 printf("Servant %d seached for but could not find node %d\n", id, num);
             }
@@ -148,7 +148,7 @@ int ContainsPresent(int num, int id)
         }
         if(num == curr->num)
         {
-            if(prints)
+            if(print)
             {
                 printf("Servant %d searched for and found between nodes %d and %d the requested node %d\n", id, pred->num, curr->num, num);
             }
