@@ -4,9 +4,6 @@
 #include <semaphore.h>
 #include <time.h>
 #include <signal.h>
-#include <unistd.h>
-#include <errno.h>
-#include <string.h>
 
 //These variables may be changed
 int numSensors = 8;
@@ -222,9 +219,13 @@ int main()
         data = dataHead;
     }
     free(threadArray);
-    sem_destroy(timer);
+    sem_destroy(timerSem);
     sem_destroy(sem);
+    sem_destroy(semCPU);
+    sem_destroy(semSensor);
     free(timerSem);
     free(sem);
+    free(semCPU);
+    free(semSensor);
     return 0;
 }
