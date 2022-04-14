@@ -11,9 +11,9 @@ OR
 gcc hw3-part2-windows.c -o hw3-part2-windows.exe
 
 To Compile (from hw3-Minotaur-p2 directory) on linux/macOS:
-gcc -pthread -lrt hw3-part1-linux.c -o hw3-part1-linux
+gcc -pthread hw3-part1-linux.c -lrt
 OR
-gcc -pthread -lrt hw3-part2-linux.c -o hw3-part2-linux
+gcc -pthread hw3-part2-linux.c -lrt
 
 
 
@@ -23,6 +23,6 @@ OR
 hw3-part2-windows.exe
 
 To Execute (from hw3-Minotaur-p2 directory) on linux/macOS:
-./hw3-part1-linux.out
+./a.out
 OR
-./hw3-part2-linux.out
+./a.out
